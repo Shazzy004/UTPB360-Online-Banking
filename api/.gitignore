@@ -1,0 +1,8 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+
+# Secretos: el .env real nunca va a git (solo .env.example)
+.env
