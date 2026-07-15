@@ -329,6 +329,7 @@ fun DashboardScreen(
     }
 }
 
+// Tarjeta de cuenta individual para el listado del Dashboard
 @Composable
 private fun TarjetaCuenta(
     cuenta: CuentaDto,
@@ -345,6 +346,7 @@ private fun TarjetaCuenta(
         ),
     ) {
         Column(Modifier.padding(16.dp)) {
+            // Tipo de Cuenta (Ahorros o Corriente)
             Text(
                 text = if (cuenta.tipo == "AHORRO")
                     stringResource(R.string.cuenta_tipo_ahorro)
@@ -353,12 +355,21 @@ private fun TarjetaCuenta(
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.onPrimaryContainer,
             )
+            // Identificador con el número de cuenta formateado
             Text(
-                text = cuenta.numeroCuenta,
+                text = "Nº Cuenta: ${cuenta.numeroCuenta}",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onPrimaryContainer,
             )
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(12.dp))
+            // Etiqueta del saldo
+            Text(
+                text = "Saldo disponible",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.outline
+            )
+            Spacer(Modifier.height(2.dp))
+            // Monto monetario formateado (se oculta si el sensor de proximidad activa modoPrivacidad)
             Text(
                 text = if (modoPrivacidad) "$ ••••" else formato.format(cuenta.saldo),
                 style = MaterialTheme.typography.headlineSmall,

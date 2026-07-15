@@ -38,6 +38,7 @@ data class MovimientoDto(
     @SerializedName("saldo_resultante") val saldoResultante: Double,
     val descripcion: String,
     val fecha: String,         // ISO-8601; se parsea en la capa de UI
+    val referencia: String,
 )
 
 data class TransferenciaRequest(

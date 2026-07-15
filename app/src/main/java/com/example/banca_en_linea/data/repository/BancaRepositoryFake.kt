@@ -27,13 +27,13 @@ class BancaRepositoryFake : BancaRepository {
 
     private val movimientos = mutableMapOf(
         1L to mutableListOf(
-            MovimientoDto(3, "CREDITO", 1200.00, 5240.75, "Depósito de salario", "2026-07-01T09:15:00"),
-            MovimientoDto(2, "DEBITO", 89.50, 4040.75, "Supermercado El Trébol", "2026-06-28T17:42:00"),
-            MovimientoDto(1, "CREDITO", 300.00, 4130.25, "Transferencia recibida", "2026-06-25T11:03:00"),
+            MovimientoDto(3, "CREDITO", 1200.00, 5240.75, "Depósito de salario", "2026-07-01T09:15:00", "REG-993810"),
+            MovimientoDto(2, "DEBITO", 89.50, 4040.75, "Supermercado El Trébol", "2026-06-28T17:42:00", "REG-183710"),
+            MovimientoDto(1, "CREDITO", 300.00, 4130.25, "Transferencia recibida", "2026-06-25T11:03:00", "REG-382910"),
         ),
         2L to mutableListOf(
-            MovimientoDto(2, "DEBITO", 45.99, 1830.20, "Pago de electricidad", "2026-07-03T08:00:00"),
-            MovimientoDto(1, "DEBITO", 12.75, 1876.19, "Café Verde S.A.", "2026-06-30T14:21:00"),
+            MovimientoDto(2, "DEBITO", 45.99, 1830.20, "Pago de electricidad", "2026-07-03T08:00:00", "REG-472910"),
+            MovimientoDto(1, "DEBITO", 12.75, 1876.19, "Café Verde S.A.", "2026-06-30T14:21:00", "REG-839102"),
         ),
     )
 

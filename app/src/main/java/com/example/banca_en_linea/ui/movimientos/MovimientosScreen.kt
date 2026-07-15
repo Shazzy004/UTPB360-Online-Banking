@@ -355,6 +355,7 @@ fun MovimientosScreen(
     }
 }
 
+// Cabecera que muestra el resumen y acciones de la cuenta actual
 @Composable
 private fun CabeceraCuenta(
     cuenta: CuentaDto,
@@ -376,19 +377,22 @@ private fun CabeceraCuenta(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column {
+                    // Tipo de Cuenta (Ahorros o Corriente)
                     Text(
                         text = if (cuenta.tipo == "AHORRO") "CUENTA DE AHORROS" else "CUENTA CORRIENTE",
                         style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
+                    // Número de cuenta formateado con prefijo descriptivo
                     Text(
-                        text = cuenta.numeroCuenta,
+                        text = "Nº Cuenta: ${cuenta.numeroCuenta}",
                         modifier = Modifier.padding(top = 2.dp),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
+                    // Botón para desplegar el diálogo modal del código QR de cobros
                     androidx.compose.material3.OutlinedButton(
                         onClick = onMostrarQr,
                         border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.primary),
@@ -399,6 +403,7 @@ private fun CabeceraCuenta(
                         Text("Código QR")
                     }
                     Spacer(Modifier.width(8.dp))
+                    // Botón para solicitar el cierre de la cuenta
                     IconButton(onClick = onCerrarCuenta) {
                         Icon(
                             imageVector = Icons.Default.Delete,
@@ -408,7 +413,15 @@ private fun CabeceraCuenta(
                     }
                 }
             }
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(12.dp))
+            // Indicador del saldo disponible
+            Text(
+                text = "Saldo disponible",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.outline
+            )
+            Spacer(Modifier.height(2.dp))
+            // Monto monetario formateado (se oculta si el sensor de proximidad está activo)
             Text(
                 text = if (modoPrivacidad) "$ ••••" else formato.format(cuenta.saldo),
                 style = MaterialTheme.typography.headlineMedium,
@@ -418,14 +431,17 @@ private fun CabeceraCuenta(
     }
 }
 
+// Representa cada movimiento/transacción histórica individual en la lista
 @Composable
 private fun TarjetaMovimiento(movimiento: MovimientoDto, modoPrivacidad: Boolean) {
     val formatoMonto = NumberFormat.getCurrencyInstance(Locale.US)
     val esCredito = movimiento.tipo == "CREDITO"
 
+    // Colores e indicadores de signo según el tipo de movimiento (Crédito=Verde/Débito=Rojo)
     val colorMonto = if (esCredito) Color(0xFF2E7D32) else Color(0xFFC62828)
     val signo = if (esCredito) "+" else "-"
 
+    // Parseo y formateo amigable de la fecha de la transacción
     val fechaFormateada = try {
         val parser = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US)
         val formateador = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.US)
@@ -448,6 +464,7 @@ private fun TarjetaMovimiento(movimiento: MovimientoDto, modoPrivacidad: Boolean
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
+            // Lado Izquierdo: Descripción, Fecha y Referencia
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = movimiento.descripcion,
@@ -460,8 +477,16 @@ private fun TarjetaMovimiento(movimiento: MovimientoDto, modoPrivacidad: Boolean
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.outline
                 )
+                Spacer(Modifier.height(2.dp))
+                // Referencia única bancaria para auditorías e integridad de base de datos
+                Text(
+                    text = "Ref: ${movimiento.referencia}",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.outline
+                )
             }
             Spacer(Modifier.width(16.dp))
+            // Lado Derecho: Monto de la transacción y Saldo resultante acumulado
             Column(horizontalAlignment = Alignment.End) {
                 Text(
                     text = if (modoPrivacidad) "$ ••••" else "$signo${formatoMonto.format(movimiento.monto).replace("$", "")}",
