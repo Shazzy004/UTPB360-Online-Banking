@@ -45,6 +45,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.banca_en_linea.R
 import kotlinx.coroutines.launch
+import androidx.compose.ui.platform.LocalContext
+import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
+import com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions
+import com.google.mlkit.vision.barcode.common.Barcode
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -57,6 +61,13 @@ fun TransferenciaScreen(
     val scope = rememberCoroutineScope()
     val mensajeQrPronto = stringResource(R.string.transferencia_qr_pronto)
     val mensajeMontoInvalido = stringResource(R.string.transferencia_monto_invalido)
+    val context = LocalContext.current
+    val scanner = remember {
+        val options = GmsBarcodeScannerOptions.Builder()
+            .setBarcodeFormats(Barcode.FORMAT_QR_CODE)
+            .build()
+        GmsBarcodeScanning.getClient(context, options)
+    }
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -147,11 +158,20 @@ fun TransferenciaScreen(
                     modifier = Modifier.fillMaxWidth(),
                 )
                 Spacer(Modifier.height(8.dp))
-                // Placeholder de funcionalidad futura: escanear el QR de la
-                // cuenta destino. Por ahora solo informa que viene pronto.
+                // Escaneo de código QR mediante Google Code Scanner
                 OutlinedButton(
                     onClick = {
-                        scope.launch { snackbarHostState.showSnackbar(mensajeQrPronto) }
+                        scanner.startScan()
+                            .addOnSuccessListener { barcode ->
+                                barcode.rawValue?.let { valorQr ->
+                                    viewModel.procesarResultadoQr(valorQr)
+                                }
+                            }
+                            .addOnFailureListener { e ->
+                                scope.launch {
+                                    snackbarHostState.showSnackbar("Error al escanear QR: ${e.localizedMessage ?: "Cancelado"}")
+                                }
+                            }
                     },
                     modifier = Modifier.fillMaxWidth(),
                 ) {

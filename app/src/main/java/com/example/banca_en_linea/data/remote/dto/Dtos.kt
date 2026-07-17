@@ -38,6 +38,7 @@ data class MovimientoDto(
     @SerializedName("saldo_resultante") val saldoResultante: Double,
     val descripcion: String,
     val fecha: String,         // ISO-8601; se parsea en la capa de UI
+    val referencia: String,
 )
 
 data class TransferenciaRequest(
@@ -58,4 +59,22 @@ data class TransferenciaResponse(
 data class ApiError(
     val codigo: String,
     val mensaje: String,
+)
+
+data class CuentaBusquedaDto(
+    @SerializedName("numero_cuenta") val numeroCuenta: String,
+    @SerializedName("nombre_titular") val nombreTitular: String,
+)
+
+data class RegistroRequest(
+    val nombre: String,
+    val apellido: String,
+    val email: String,
+    val cedula: String,
+    val password: String,
+    @SerializedName("tipo_cuenta") val tipoCuenta: String,
+)
+
+data class CrearCuentaRequest(
+    @SerializedName("tipo_cuenta") val tipoCuenta: String,
 )

@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.banca_en_linea.data.remote.dto.CuentaDto
 import com.example.banca_en_linea.data.remote.dto.TransferenciaResponse
+import com.example.banca_en_linea.data.remote.dto.CuentaBusquedaDto
 import com.example.banca_en_linea.data.repository.BancaRepository
 import com.example.banca_en_linea.data.repository.Resultado
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -101,5 +102,39 @@ class TransferenciaViewModel(private val repository: BancaRepository) : ViewMode
     /** Resetea el formulario para hacer otra transferencia sin salir. */
     fun nuevaTransferencia() = _uiState.update {
         it.copy(comprobante = null, destino = "", monto = "", descripcion = "", error = null)
+    }
+
+    fun procesarResultadoQr(valorQr: String) {
+        val limpia = valorQr.trim()
+        val numeroCuenta = if (limpia.startsWith("http") || limpia.contains("://")) {
+            val match = Regex("""UTPB-\d{4}-\d{4}""").find(limpia)
+            match?.value ?: limpia
+        } else {
+            limpia
+        }
+
+        viewModelScope.launch {
+            _uiState.update { it.copy(enviando = true, error = null) }
+            when (val r = repository.buscarCuentaPorNumero(numeroCuenta)) {
+                is Resultado.Exito -> {
+                    _uiState.update {
+                        it.copy(
+                            enviando = false,
+                            destino = r.datos.numeroCuenta,
+                            descripcion = "Transferencia a ${r.datos.nombreTitular}",
+                            error = null
+                        )
+                    }
+                }
+                is Resultado.Error -> {
+                    _uiState.update {
+                        it.copy(
+                            enviando = false,
+                            error = "Error al leer QR: ${r.mensaje}"
+                        )
+                    }
+                }
+            }
+        }
     }
 }

@@ -16,6 +16,16 @@ class LoginRequest(BaseModel):
     password: str = Field(min_length=1)
 
 
+class RegisterRequest(BaseModel):
+    nombre: str = Field(min_length=1, max_length=80)
+    apellido: str = Field(min_length=1, max_length=80)
+    email: EmailStr
+    cedula: str = Field(min_length=1, max_length=20)
+    password: str = Field(min_length=6)
+    tipo_cuenta: str = Field(pattern="^(AHORRO|CORRIENTE)$")
+
+
+
 class TokenResponse(BaseModel):
     access_token: str
     refresh_token: str
@@ -54,6 +64,13 @@ class CuentaOut(MontoSerializerMixin):
     moneda: str
 
 
+class CuentaBusquedaOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    numero_cuenta: str
+    nombre_titular: str
+
+
 class MovimientoOut(MontoSerializerMixin):
     model_config = ConfigDict(from_attributes=True)
 
@@ -81,3 +98,7 @@ class TransferenciaOut(BaseModel):
     referencia: str
     estado: str
     fecha: datetime
+
+
+class CrearCuentaRequest(BaseModel):
+    tipo_cuenta: str = Field(pattern="^(AHORRO|CORRIENTE)$")

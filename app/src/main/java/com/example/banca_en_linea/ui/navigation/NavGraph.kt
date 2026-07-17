@@ -7,11 +7,17 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 import com.example.banca_en_linea.data.repository.BancaRepository
 import com.example.banca_en_linea.ui.dashboard.DashboardScreen
 import com.example.banca_en_linea.ui.dashboard.DashboardViewModel
 import com.example.banca_en_linea.ui.login.LoginScreen
 import com.example.banca_en_linea.ui.login.LoginViewModel
+import com.example.banca_en_linea.ui.registro.RegistroScreen
+import com.example.banca_en_linea.ui.registro.RegistroViewModel
+import com.example.banca_en_linea.ui.movimientos.MovimientosScreen
+import com.example.banca_en_linea.ui.movimientos.MovimientosViewModel
 import com.example.banca_en_linea.ui.transferencia.TransferenciaScreen
 import com.example.banca_en_linea.ui.transferencia.TransferenciaViewModel
 
@@ -21,8 +27,10 @@ import com.example.banca_en_linea.ui.transferencia.TransferenciaViewModel
  */
 object Rutas {
     const val LOGIN = "login"
+    const val REGISTRO = "registro"
     const val DASHBOARD = "dashboard"
     const val TRANSFERENCIA = "transferencia"
+    const val MOVIMIENTOS = "movimientos/{cuentaId}"
 }
 
 /**
@@ -36,6 +44,8 @@ class BancaViewModelFactory(
     override fun <T : ViewModel> create(modelClass: Class<T>): T = when {
         modelClass.isAssignableFrom(LoginViewModel::class.java) ->
             LoginViewModel(repository) as T
+        modelClass.isAssignableFrom(RegistroViewModel::class.java) ->
+            RegistroViewModel(repository) as T
         modelClass.isAssignableFrom(DashboardViewModel::class.java) ->
             DashboardViewModel(repository) as T
         modelClass.isAssignableFrom(TransferenciaViewModel::class.java) ->
@@ -61,11 +71,26 @@ fun UtpbNavGraph(
                 viewModel = viewModel(factory = factory),
                 onLoginExitoso = {
                     navController.navigate(Rutas.DASHBOARD) {
-                        // Saca el login del back stack: el botón "atrás" en el
-                        // dashboard no debe regresar a la pantalla de login.
                         popUpTo(Rutas.LOGIN) { inclusive = true }
                     }
                 },
+                onNavegarARegistro = {
+                    navController.navigate(Rutas.REGISTRO)
+                }
+            )
+        }
+
+        composable(Rutas.REGISTRO) {
+            RegistroScreen(
+                viewModel = viewModel(factory = factory),
+                onRegistroExitoso = {
+                    navController.navigate(Rutas.DASHBOARD) {
+                        popUpTo(Rutas.LOGIN) { inclusive = true }
+                    }
+                },
+                onVolverAlLogin = {
+                    navController.popBackStack()
+                }
             )
         }
 
@@ -74,20 +99,37 @@ fun UtpbNavGraph(
                 viewModel = viewModel(factory = factory),
                 onCerrarSesion = {
                     navController.navigate(Rutas.LOGIN) {
-                        popUpTo(0) { inclusive = true } // limpia todo el stack
+                        popUpTo(0) { inclusive = true }
                     }
                 },
                 onNuevaTransferencia = {
                     navController.navigate(Rutas.TRANSFERENCIA)
                 },
+                onVerMovimientos = { cuentaId ->
+                    navController.navigate("movimientos/$cuentaId")
+                }
             )
+        }
+
+        composable(
+            route = Rutas.MOVIMIENTOS,
+            arguments = listOf(navArgument("cuentaId") { type = NavType.LongType })
+        ) { backStackEntry ->
+            val cuentaId = backStackEntry.arguments?.getLong("cuentaId") ?: 0L
+            val vm: MovimientosViewModel = viewModel(
+                factory = object : ViewModelProvider.Factory {
+                    @Suppress("UNCHECKED_CAST")
+                    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                        return MovimientosViewModel(cuentaId, repository) as T
+                    }
+                }
+            )
+            MovimientosScreen(viewModel = vm, onVolver = { navController.popBackStack() })
         }
 
         composable(Rutas.TRANSFERENCIA) {
             TransferenciaScreen(
                 viewModel = viewModel(factory = factory),
-                // popBackStack (no navigate): regresa al dashboard existente
-                // en vez de apilar una instancia nueva encima.
                 onVolver = { navController.popBackStack() },
             )
         }

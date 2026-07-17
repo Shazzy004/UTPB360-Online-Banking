@@ -4,6 +4,7 @@ import com.example.banca_en_linea.data.remote.dto.ClienteDto
 import com.example.banca_en_linea.data.remote.dto.CuentaDto
 import com.example.banca_en_linea.data.remote.dto.MovimientoDto
 import com.example.banca_en_linea.data.remote.dto.TransferenciaResponse
+import com.example.banca_en_linea.data.remote.dto.CuentaBusquedaDto
 
 /**
  * Resultado tipado de una operación del repositorio.
@@ -34,6 +35,22 @@ interface BancaRepository {
         descripcion: String?,
     ): Resultado<TransferenciaResponse>
 
+    suspend fun buscarCuentaPorNumero(numero: String): Resultado<CuentaBusquedaDto>
+
+    suspend fun registrarse(
+        nombre: String,
+        apellido: String,
+        email: String,
+        cedula: String,
+        contrasena: String,
+        tipoCuenta: String,
+    ): Resultado<Unit>
+
     fun cerrarSesion()
+
+    suspend fun crearCuenta(tipoCuenta: String): Resultado<CuentaDto>
+
+    suspend fun cerrarCuenta(cuentaId: Long, destinoCuentaId: Long?): Resultado<Unit>
+
     fun haySesion(): Boolean
 }

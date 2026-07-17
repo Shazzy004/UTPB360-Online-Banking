@@ -9,6 +9,9 @@ import com.example.banca_en_linea.data.remote.dto.LoginRequest
 import com.example.banca_en_linea.data.remote.dto.MovimientoDto
 import com.example.banca_en_linea.data.remote.dto.TransferenciaRequest
 import com.example.banca_en_linea.data.remote.dto.TransferenciaResponse
+import com.example.banca_en_linea.data.remote.dto.CuentaBusquedaDto
+import com.example.banca_en_linea.data.remote.dto.RegistroRequest
+import com.example.banca_en_linea.data.remote.dto.CrearCuentaRequest
 import com.google.gson.Gson
 import retrofit2.HttpException
 import java.io.IOException
@@ -79,7 +82,39 @@ class BancaRepositoryRemoto(
     ): Resultado<TransferenciaResponse> =
         llamar { api.transferir(TransferenciaRequest(origen, destino, monto, descripcion)) }
 
+    override suspend fun buscarCuentaPorNumero(numero: String): Resultado<CuentaBusquedaDto> =
+        llamar { api.buscarCuentaPorNumero(numero) }
+
+    override suspend fun registrarse(
+        nombre: String,
+        apellido: String,
+        email: String,
+        cedula: String,
+        contrasena: String,
+        tipoCuenta: String,
+    ): Resultado<Unit> {
+        val resultado = llamar {
+            api.registrarse(
+                RegistroRequest(nombre, apellido, email, cedula, contrasena, tipoCuenta)
+            )
+        }
+        return when (resultado) {
+            is Resultado.Exito -> {
+                tokenManager.accessToken = resultado.datos.accessToken
+                tokenManager.refreshToken = resultado.datos.refreshToken
+                Resultado.Exito(Unit)
+            }
+            is Resultado.Error -> resultado
+        }
+    }
+
     override fun cerrarSesion() = tokenManager.limpiar()
+
+    override suspend fun crearCuenta(tipoCuenta: String): Resultado<CuentaDto> =
+        llamar { api.crearCuenta(CrearCuentaRequest(tipoCuenta)) }
+
+    override suspend fun cerrarCuenta(cuentaId: Long, destinoCuentaId: Long?): Resultado<Unit> =
+        llamar { api.cerrarCuenta(cuentaId, destinoCuentaId) }
 
     override fun haySesion(): Boolean = tokenManager.haySesion()
 }

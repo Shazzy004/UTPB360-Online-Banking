@@ -31,3 +31,11 @@ def saldo_insuficiente() -> ApiException:
 
 def transferencia_invalida(mensaje: str) -> ApiException:
     return ApiException(422, "TRANSFERENCIA_INVALIDA", mensaje)
+
+
+def registro_duplicado(mensaje: str) -> ApiException:
+    return ApiException(400, "REGISTRO_DUPLICADO", mensaje)
+
+
+def operacion_invalida(mensaje: str) -> ApiException:
+    return ApiException(400, "OPERACION_INVALIDA", mensaje)

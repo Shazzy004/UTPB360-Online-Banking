@@ -48,3 +48,64 @@ def test_perfil_y_cuentas_del_usuario_autenticado(client, usuarios):
     cuentas = client.get("/api/v1/cuentas", headers=headers).json()
     assert len(cuentas) == 1
     assert cuentas[0]["numero_cuenta"] == "UTPB-0003-1290"
+
+
+def test_registro_exitoso(client, db):
+    payload = {
+        "nombre": "Carlos",
+        "apellido": "Gomez",
+        "email": "carlos@utpb.com",
+        "cedula": "8-999-9999",
+        "password": "carlospassword",
+        "tipo_cuenta": "AHORRO"
+    }
+    r = client.post("/api/v1/auth/register", json=payload)
+    assert r.status_code == 200
+    body = r.json()
+    assert "access_token" in body and "refresh_token" in body
+
+    # Verificar que el usuario y su cuenta se hayan creado
+    headers = {"Authorization": f"Bearer {body['access_token']}"}
+    perfil = client.get("/api/v1/clientes/me", headers=headers).json()
+    assert perfil["nombre"] == "Carlos"
+    assert perfil["email"] == "carlos@utpb.com"
+
+    cuentas = client.get("/api/v1/cuentas", headers=headers).json()
+    assert len(cuentas) == 1
+    assert cuentas[0]["tipo"] == "AHORRO"
+    assert cuentas[0]["saldo"] == 500.0
+
+
+def test_registro_corriente(client, db):
+    payload = {
+        "nombre": "Roberto",
+        "apellido": "Varela",
+        "email": "roberto@utpb.com",
+        "cedula": "8-888-8888",
+        "password": "robertopassword",
+        "tipo_cuenta": "CORRIENTE"
+    }
+    r = client.post("/api/v1/auth/register", json=payload)
+    assert r.status_code == 200
+    body = r.json()
+
+    headers = {"Authorization": f"Bearer {body['access_token']}"}
+    cuentas = client.get("/api/v1/cuentas", headers=headers).json()
+    assert len(cuentas) == 1
+    assert cuentas[0]["tipo"] == "CORRIENTE"
+
+
+def test_registro_duplicado(client, usuarios):
+    # Intentar registrar con el mismo correo que ya tiene Ana
+    payload = {
+        "nombre": "Ana Duplicada",
+        "apellido": "Morales",
+        "email": "ana@utpb.com",
+        "cedula": "8-555-9999",
+        "password": "password",
+        "tipo_cuenta": "AHORRO"
+    }
+    r = client.post("/api/v1/auth/register", json=payload)
+    assert r.status_code == 400
+    assert r.json()["codigo"] == "REGISTRO_DUPLICADO"
+
